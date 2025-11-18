@@ -6,7 +6,7 @@ import { BN} from "bn.js";
 import { createMint, getAssociatedTokenAddress, getOrCreateAssociatedTokenAccount, mintTo, TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import {createUmi} from "@metaplex-foundation/umi-bundle-defaults";
 import { createSignerFromKeypair,generateSigner,signerIdentity, KeypairSigner } from "@metaplex-foundation/umi";
-import {createV1, expectPda, MPL_CORE_PROGRAM_ID, mplCore} from "@metaplex-foundation/mpl-core";
+import {createV1, expectPda, fetchAssetsByOwner, MPL_CORE_PROGRAM_ID, mplCore} from "@metaplex-foundation/mpl-core";
 import {fromWeb3JsKeypair, fromWeb3JsPublicKey,toWeb3JsPublicKey} from "@metaplex-foundation/umi-web3js-adapters";
 import { ASSOCIATED_PROGRAM_ID } from "@coral-xyz/anchor/dist/cjs/utils/token";
 import { SYSTEM_PROGRAM_ID } from "@coral-xyz/anchor/dist/cjs/native/system";
@@ -124,6 +124,7 @@ describe("nft_escrow", () => {
     );    
 
     console.log("ESCROW PDA: ",escrowPDA.toBase58());
+    console.log("ESCROW BUMP: ", escrowBump);
 
   //VaultATA for sol
     // try {
@@ -143,8 +144,6 @@ describe("nft_escrow", () => {
     //   console.log("Error creating Vault: ", error);
     // }
 
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
     vault_ata_sol = await getAssociatedTokenAddress(
       mint_sol,
       escrowPDA,
@@ -154,26 +153,6 @@ describe("nft_escrow", () => {
 
     console.log("Vault ATA: ", vault_ata_sol.toBase58());
 
-    // maker_ata_sol = (await getAssociatedTokenAddress(
-    //   mint_sol,
-    //   maker.publicKey,
-    //   false,
-    //   token_program
-    // ));
-
-    // console.log("Maker ATA: ",maker_ata_sol.toBase58());
-
-    // buyer_ata_sol = await getAssociatedTokenAddress(
-    //   mint_sol,
-    //   buyer.publicKey,
-    //   false,
-    //   token_program
-    // );
-
-    // console.log("Buyer ATA: ",buyer_ata_sol.toBase58());
-
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
     //MAKER_ATA For sol
     try {
       console.log("Creating an maker ata for sol:  ...");
@@ -182,19 +161,15 @@ describe("nft_escrow", () => {
       provider.wallet.payer,
       mint_sol,
       maker.publicKey,
-      false,
-      "confirmed",
-      undefined,
-      token_program
     )).address;
     console.log("Maker ATA Created Succesfully...", maker_ata_sol.toBase58());
     } catch (error) {
       console.log("Error Creating Maker ATA: ",error);
     }
 
-    await new Promise(resolve => setTimeout(resolve,2000));
+ 
 
-    //e Buyer ATA for sol
+  //e Buyer ATA for sol
   try {
     console.log("Creating an buyer ata: ...");
     buyer_ata_sol= (await getOrCreateAssociatedTokenAccount(
@@ -202,17 +177,12 @@ describe("nft_escrow", () => {
       provider.wallet.payer,
       mint_sol,
       buyer.publicKey,
-      false,
-      "confirmed",
-      undefined,
-      token_program
     )).address;
    console.log("Buyer ATA Created Succesfully..: ", buyer_ata_sol.toBase58());
   } catch (error) {
       console.log("Error Creating Buyer ATA: ", error);
   }
-
-
+  
   //Airdrop sol to maker and buyer
   const mint_to_maker = await mintTo(
       connection,
@@ -245,13 +215,15 @@ describe("nft_escrow", () => {
   });
 
 
-
+  //WORKING
   it("Is initialized!", async () => {
     
+    const seed  = new BN(2);
     const escrowBeforeInitialization = await  connection.getAccountInfo(escrowPDA);
     expect(escrowBeforeInitialization).to.be.null;
+
     // Add your test here.
-    const tx = await program.methods.initialize(new BN(2), new BN(3)).accountsPartial({
+    const tx = await program.methods.initialize(seed, new BN(3)).accountsPartial({
       maker: maker.publicKey,
       mintSol: mint_sol,
       asset: assetAddress,
@@ -285,5 +257,78 @@ describe("nft_escrow", () => {
     console.log("  Maker Mint:", escrowState.makerMint.toBase58());
     console.log("  Bump:", escrowState.bump);
     console.log("  Fee:", escrowState.fee);
+
+   
+
+
   });
+
+  //WORKING
+  it("List NFT", async () => {
+      const assetsByOwnerBefore = await fetchAssetsByOwner(umi, escrowPDA.toString(), {
+     skipDerivePlugins: false, 
+   })
+     console.log("Assets owned by the escrow after listing: " ,assetsByOwnerBefore)
+    const amount = new BN(4);
+    const seed  = new BN(2);
+    const tx = await program.methods.listNft(amount, seed).accountsPartial({
+      maker: maker.publicKey,
+      mintSol: mint_sol,
+      asset: assetAddress,
+      vault: vault_ata_sol,
+      escrow: escrowPDA,
+      makerAtaSol: maker_ata_sol,
+      associatedTokenProgram: ASSOCIATED_PROGRAM_ID,
+      tokenProgram: TOKEN_PROGRAM_ID,
+      systemProgram: SYSTEM_PROGRAM_ID,
+      mplCoreProgram: MPL_CORE_PROGRAM_ID
+    }).signers([maker]).rpc()
+
+    console.log("Your list transaction signature: ", tx);
+
+    const assetsByOwner = await fetchAssetsByOwner(umi, escrowPDA.toString(), {
+     skipDerivePlugins: false, 
+   })
+    console.log("Assets owned by the escrow after listing: " ,assetsByOwner)
+
+
+  })
+
+  // //WORKING
+  // it("Buy", async() => {
+  //   const seed = new BN(2);
+  //   const tx = await program.methods.buyNft(seed).accountsPartial({
+  //     buyer: buyer.publicKey,
+  //     maker: maker.publicKey,
+  //     mintSol: mint_sol,
+  //     asset: assetAddress,
+  //     vault: vault_ata_sol,
+  //     escrow: escrowPDA,
+  //     makerAtaSol: maker_ata_sol,
+  //     buyerAtaSol: buyer_ata_sol,
+  //     associatedTokenProgram: ASSOCIATED_PROGRAM_ID,
+  //     tokenProgram: TOKEN_PROGRAM_ID,
+  //     systemProgram: SYSTEM_PROGRAM_ID,
+  //     mplCoreProgram: MPL_CORE_PROGRAM_ID
+  //   }).signers([buyer]).rpc();
+
+  //   console.log("Your buy transaction signature: ", tx);
+  // })
+
+  it("Unlist", async() => {
+    const seed  = new BN(2);
+ 
+
+    const unlisttx = await program.methods.unlist(seed).accountsPartial({
+      maker: maker.publicKey,
+      asset: assetAddress,
+      escrow: escrowPDA,
+      associatedTokenProgram: ASSOCIATED_PROGRAM_ID,
+      tokenProgram: TOKEN_PROGRAM_ID,
+      systemProgram: SYSTEM_PROGRAM_ID,
+      mplCoreProgram: MPL_CORE_PROGRAM_ID
+    }).signers([maker]).rpc();
+
+    console.log("Your unlist transaction signature: ",unlisttx);
+  })
 });

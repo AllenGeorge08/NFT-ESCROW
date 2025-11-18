@@ -27,5 +27,5 @@ pub struct Escrow {
     pub maker_mint: Pubkey,
     pub bump: u8,
     pub fee: u8,
-    pub state: List 
+    pub state: List,
 }

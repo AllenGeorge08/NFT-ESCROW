@@ -1,0 +1,27 @@
+
+action "nft_escrow_buy" "svm::deploy_subgraph" {
+    program_id = action.deploy_nft_escrow.program_id
+    program_idl = action.deploy_nft_escrow.program_idl
+    block_height = 0 // action.deploy_nft_escrow.block_height
+    event {
+        name = "Buy"
+    }
+}
+
+action "nft_escrow_unlist" "svm::deploy_subgraph" {
+    program_id = action.deploy_nft_escrow.program_id
+    program_idl = action.deploy_nft_escrow.program_idl
+    block_height = 0 // action.deploy_nft_escrow.block_height
+    event {
+        name = "Unlist"
+    }
+}
+
+action "nft_escrow_nft_escrow::event::list" "svm::deploy_subgraph" {
+    program_id = action.deploy_nft_escrow.program_id
+    program_idl = action.deploy_nft_escrow.program_idl
+    block_height = 0 // action.deploy_nft_escrow.block_height
+    event {
+        name = "nft_escrow::event::List"
+    }
+}

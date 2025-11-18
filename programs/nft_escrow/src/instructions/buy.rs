@@ -18,6 +18,7 @@ pub struct Buy<'info> {
     pub maker: SystemAccount<'info>, //e Why is this a system account
     #[account(mut)]
     pub mint_sol: Box<InterfaceAccount<'info, Mint>>,
+    #[account(mut)]
     ///CHECKED: No Validation needed here
     pub asset: UncheckedAccount<'info>,
     #[account(
@@ -30,22 +31,22 @@ pub struct Buy<'info> {
     #[account(
        mut ,
        associated_token::mint = mint_sol,
-       associated_token::authority = buyer,
+       associated_token::authority = escrow,
        associated_token::token_program = token_program,
     )]
     pub vault: Box<InterfaceAccount<'info, TokenAccount>>,
     #[account(
         mut,
         associated_token::mint =mint_sol,
-        associated_token::authority = escrow,
+        associated_token::authority = maker,
         associated_token::token_program = token_program,
     )]
     pub maker_ata_sol: Box<InterfaceAccount<'info, TokenAccount>>,
     #[account(
         init_if_needed,
         payer = buyer,
-        associated_token::mint = mint_sol,
-        associated_token::authority = buyer,
+        associated_token::mint = mint_sol,  
+        associated_token::authority = buyer, //e correct
         associated_token::token_program = token_program
     )]
     pub buyer_ata_sol: Box<InterfaceAccount<'info, TokenAccount>>,
@@ -89,8 +90,10 @@ impl<'info> Buy<'info> {
             &[self.escrow.bump], // Use the bump stored in escrow state
         ];
 
+        //e ERROR: When the owner is an escrow/pda you have to specify authority...
         TransferV1CpiBuilder::new(&mpl_program)
             .asset(&self.asset.to_account_info())
+            .authority(Some(&self.escrow.to_account_info()))
             .payer(&buyer)
             .new_owner(&buyer)
             .invoke_signed(&[seeds])?;

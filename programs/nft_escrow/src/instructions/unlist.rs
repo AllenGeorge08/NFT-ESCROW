@@ -14,16 +14,16 @@ use mpl_core::instructions::TransferV1CpiBuilder;
 pub struct Unlist<'info> {
     #[account(mut)]
     pub maker: Signer<'info>,
+    #[account(mut)]
     ///CHECKED: No Validation needed
     pub asset: UncheckedAccount<'info>,
     #[account(
         mut,
         close = maker,
         seeds = [b"escrow",seed.to_le_bytes().as_ref()],
-        bump,
+        bump = escrow.bump, 
     )]
     pub escrow: Box<Account<'info, Escrow>>,
-    pub buyer_ata_sol: Box<InterfaceAccount<'info, TokenAccount>>,
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub token_program: Interface<'info, TokenInterface>,
     pub system_program: Program<'info, System>,
@@ -44,9 +44,11 @@ impl<'info> Unlist<'info> {
 
         TransferV1CpiBuilder::new(&mpl_program)
             .asset(&self.asset.to_account_info())
+            .authority(Some(escrow))
             .payer(&maker)
             .new_owner(&maker)
             .invoke_signed(&[seeds])?;
+            // .invoke()?; //e this fails here bcz the escrow is the authority
 
         msg!("NFT Unlisted Succesfully");
 

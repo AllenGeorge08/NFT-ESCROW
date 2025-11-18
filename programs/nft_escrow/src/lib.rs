@@ -15,15 +15,26 @@ pub use errors::*;
 pub mod nft_escrow {
     use super::*;
 
-    pub fn initialize(ctx: Context<List>, seed: u64, amount: u64) -> Result<()> {
-        ctx.accounts.initialize_escrow(seed, &ctx.bumps,amount)?;
+    pub fn initialize(ctx: Context<Initialize>, seed: u64, amount: u64) -> Result<()> {
+        ctx.accounts.initialize_escrow(seed, &ctx.bumps, amount)?;
         msg!("Program Initialized: {:?}", ctx.program_id);
         Ok(())
     }
 
     pub fn list_nft(ctx: Context<List>, amount: u64, seed: u64) -> Result<()> {
-        ctx.accounts.list_nft(amount, &ctx.bumps, seed)?;
+        ctx.accounts.list_nft(amount, seed)?;
         msg!("Nft Listed");
+        Ok(())
+    }
+
+    pub fn buy_nft(ctx: Context<Buy>, seed: u64) -> Result<()> {
+        ctx.accounts
+            .buy_nft(seed, &ctx.bumps, ctx.accounts.escrow.state.price)?;
+        Ok(())
+    }
+
+    pub fn unlist(ctx: Context<Unlist>, seed: u64) -> Result<()> {
+        ctx.accounts.unlist(seed, &ctx.bumps)?;
         Ok(())
     }
 }
