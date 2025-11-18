@@ -1,13 +1,10 @@
 use anchor_lang::prelude::*;
 use anchor_spl::{
     associated_token::AssociatedToken,
-    token_interface::{transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked},
+    token_interface::{Mint, TokenAccount, TokenInterface},
 };
 
 use crate::state::Escrow;
-use crate::Errors;
-use mpl_core::accounts::BaseAssetV1;
-use mpl_core::instructions::TransferV1CpiBuilder;
 
 #[derive(Accounts)]
 #[instruction(seed: u64)]

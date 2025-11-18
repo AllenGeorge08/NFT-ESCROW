@@ -45,7 +45,7 @@ pub struct Buy<'info> {
     #[account(
         init_if_needed,
         payer = buyer,
-        associated_token::mint = mint_sol,  
+        associated_token::mint = mint_sol,
         associated_token::authority = buyer, //e correct
         associated_token::token_program = token_program
     )]
@@ -58,15 +58,15 @@ pub struct Buy<'info> {
 }
 
 impl<'info> Buy<'info> {
-    pub fn buy_nft(&mut self, seed: u64, bumps: &BuyBumps, price_amount: u64) -> Result<()> {
-        let base_asset = BaseAssetV1::try_from(&self.asset.to_account_info())
+    pub fn buy_nft(&mut self, seed: u64, _bumps: &BuyBumps, price_amount: u64) -> Result<()> {
+        let _base_asset = BaseAssetV1::try_from(&self.asset.to_account_info())
             .map_err(|_| error!(Errors::InvalidAsset))?;
-        let mint_account = &self.mint_sol.to_account_info();
-        let maker = &self.maker.to_account_info();
-        let escrow = &self.escrow.to_account_info();
-        let vault = &self.vault.to_account_info();
+        let _mint_account = &self.mint_sol.to_account_info();
+        let _maker = &self.maker.to_account_info();
+        let _escrow = &self.escrow.to_account_info();
+        let _vault = &self.vault.to_account_info();
         let mpl_program = &self.mpl_core_program.to_account_info();
-        let system_program = &self.system_program.to_account_info();
+        let _system_program = &self.system_program.to_account_info();
         let buyer = &self.buyer.to_account_info();
 
         let transfer_accounts = TransferChecked {

@@ -51,7 +51,7 @@ pub struct List<'info> {
 
 impl<'info> List<'info> {
     pub fn list_nft(&mut self, amount: u64, seed: u64) -> Result<()> {
-        let base_asset = BaseAssetV1::try_from(&self.asset.to_account_info())
+        let _base_asset = BaseAssetV1::try_from(&self.asset.to_account_info())
             .map_err(|_| error!(Errors::InvalidAsset))?;
         let escrow = &self.escrow.to_account_info();
         let mpl_program = &self.mpl_core_program.to_account_info();
@@ -77,7 +77,7 @@ impl<'info> List<'info> {
             .payer(&payer)
             .new_owner(&escrow)
             .invoke_signed(&[seeds])?;
-            // .invoke()?; //e Here account is not authority thusss it passes
+        // .invoke()?; //e Here account is not authority thusss it passes
 
         self.escrow.state.listed = true;
 
