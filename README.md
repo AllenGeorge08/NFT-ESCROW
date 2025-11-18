@@ -76,11 +76,10 @@ Allows the seller to cancel the listing and reclaim the NFT from the program esc
 Aether Exchange is built on the following components:
 
 * **Program-Derived Addresses (PDAs)** for secure, signer-less control over escrowed assets.
-* **SPL Token Program** for all token/NFT transfer operations.
+* **SPL Token Program** for all token transfers.
+* **Metaplex Core** is adopted as the NFT standard.
 * **Anchor account types and constraints** ensuring strict validation and controlled state transitions.
 * **Deterministic and verifiable account ownership** preventing unauthorized access or modification.
-
-The program never requests private key access and does not grant authority to external parties.
 
 ---
 
